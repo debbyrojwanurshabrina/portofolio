@@ -812,6 +812,10 @@ p {
 
 .org-card-wrapper {
     position: relative;
+    /* Ensure the wrapper respects z-index on hover */
+    z-index: 1;
+    transition: z-index 0s linear 0s;
+    /* Instant z-index change */
 }
 
 .org-main-card {
@@ -820,6 +824,15 @@ p {
     cursor: pointer;
     position: relative;
     z-index: 10;
+}
+
+/* 
+   FIX: High Z-Index on Hover 
+   Ensures the popped-out card (and overlay) sits ON TOP of all siblings.
+   Fixes: "TERHALANG OLEH CARD TENGAH"
+*/
+.org-card-wrapper:hover {
+    z-index: 1000;
 }
 
 .org-card-wrapper:hover .org-main-card {
@@ -867,12 +880,14 @@ p {
     right: auto;
     transform-origin: left center;
 
-    transform: translateX(-10px);
+    /* RESTORED FLIP: Rotate out */
+    transform: rotateY(-90deg) translateX(-40px);
     opacity: 0;
 }
 
 .org-card-wrapper:hover .org-detail-overlay.pop-right {
-    transform: translateX(0);
+    /* RESTORED FLIP: Rotate in */
+    transform: rotateY(0deg) translateX(0);
     left: 105%;
 }
 
@@ -887,12 +902,14 @@ p {
     left: auto;
     transform-origin: right center;
 
-    transform: translateX(10px);
+    /* RESTORED FLIP: Rotate out */
+    transform: rotateY(90deg) translateX(40px);
     opacity: 0;
 }
 
 .org-card-wrapper:hover .org-detail-overlay.pop-left {
-    transform: translateX(0);
+    /* RESTORED FLIP: Rotate in */
+    transform: rotateY(0deg) translateX(0);
     right: 105%;
 }
 
@@ -904,7 +921,8 @@ p {
     left: 50%;
     transform-origin: center center;
 
-    transform: translate(-50%, -50%) scale(0.95);
+    /* RESTORED FLIP: Rotate, Scale, Translate */
+    transform: translate(-50%, -50%) scale(0.6) rotateY(180deg);
     opacity: 0;
     z-index: 2000;
 }
@@ -914,7 +932,8 @@ p {
     visibility: visible;
     pointer-events: auto;
 
-    transform: translate(-50%, -50%) scale(1);
+    /* RESTORED FLIP: Rotate flat */
+    transform: translate(-50%, -50%) scale(1) rotateY(0deg);
 }
 
 .overlay-image-container {
