@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Organization Cards V5 - Horizontal Popups</title>
+    <style>
+        :root {
+            --bg-color: #f8fafc;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --accent: #2563eb;
+
+            /* Main Card Dimensions (Fixed as requested) */
+            --card-width: 300px;
+            --card-height: 250px;
+            /* Compact like standard org cards */
+
+            /* Detail Card Dimensions */
+            --popup-width: 400px;
+            --popup-height: 400px;
+
+            --transition-speed: 0.4s;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+
+        /* LAYOUT CONTAINER */
+        .org-container {
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+            align-items: center;
+            gap: 30px;
+            position: relative;
+            width: 100%;
+            max-width: 1400px;
+        }
+
+        /* FADE EFFECT ON HOVER */
+        /* When container is hovered, fade out all cards */
+        .org-container:hover .card-wrapper {
+            opacity: 0.4;
+            filter: blur(2px);
+            transform: scale(0.98);
+        }
+
+        /* Exception: The hovered card stays fully visible */
+        .org-container .card-wrapper:hover {
+            opacity: 1;
+            filter: none;
+            transform: scale(1);
+            z-index: 100;
+            /* Bring to front */
+        }
+
+        /* CARD WRAPPER */
+        .card-wrapper {
+            position: relative;
+            width: var(--card-width);
+            height: var(--card-height);
+            transition: all var(--transition-speed) ease;
+            perspective: 1000px;
+            /* For 3D Flip */
+        }
+
+        /* MAIN CARD (The Visible Face) */
+        .main-card {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+
+            /* 3D Transform Settings */
+            transform-style: preserve-3d;
+            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+
+            /* Ensure it stays on top of styling */
+            z-index: 2;
+        }
+
+        .card-wrapper:hover .main-card {
+            transform: rotateY(180deg);
+        }
+
+        /* Front Face Content of Main Card */
+        /* Since we don't want the card to "disappear" into description, 
+           we make the back of the main card a simple styled back 
+           that acts as a placeholder while the Popup appears next to it. */
+
+        .card-front,
+        .card-back-placeholder {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            border-radius: 16px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            top: 0;
+            left: 0;
+        }
+
+        .card-front {
+            background: white;
+        }
+
+        .card-back-placeholder {
+            background: #1e293b;
+            transform: rotateY(180deg);
+            color: white;
+            padding: 20px;
+        }
+
+        /* Content Styling */
+        .card-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            color: var(--accent);
+        }
+
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .card-subtitle {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* 
+           DETAIL POPUP CARD 
+           This appears NEXT TO the main card.
+        */
+        .detail-popup {
+            position: absolute;
+            top: -75px;
+            /* Center partially vertically relative to card height (250 vs 400) */
+            /* width/height defined below */
+            width: var(--popup-width);
+            height: var(--popup-height);
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            z-index: 50;
+            /* Above regular content */
+            pointer-events: none;
+        }
+
+        .card-wrapper:hover .detail-popup {
+            opacity: 1;
+            visibility: visible;
+            pointer-events: auto;
+        }
+
+        /* POSITIONING RULES */
+
+        /* 1. Left Card -> Popup on Right */
+        .card-wrapper:nth-child(1) .detail-popup {
+            left: 105%;
+            /* Just to the right */
+            transform: translateX(-20px);
+        }
+
+        .card-wrapper:nth-child(1):hover .detail-popup {
+            transform: translateX(0);
+        }
+
+        /* 3. Right Card -> Popup on Left */
+        .card-wrapper:nth-child(3) .detail-popup {
+            right: 105%;
+            /* Just to the left */
+            transform: translateX(20px);
+        }
+
+        .card-wrapper:nth-child(3):hover .detail-popup {
+            transform: translateX(0);
+        }
+
+        /* 2. Center Card -> Popup on Right (Balanced) */
+        /* OR Left. Let's choose Left but ensure it doesn't overlap the left card too much visually 
+           (though z-index handles it). 
+           Actually, if we put it on the Left, it covers Card 1. If Right, covers Card 3.
+           Since Card 1/3 are faded out, covering is fine. 
+           Let's go RIGHT for consistency with reading flow, or switch based on preference.
+           The prompt says "either on the left or right".
+        */
+        .card-wrapper:nth-child(2) .detail-popup {
+            left: 105%;
+            transform: translateX(-20px);
+        }
+
+        .card-wrapper:nth-child(2):hover .detail-popup {
+            transform: translateX(0);
+        }
+
+
+        /* POPUP CONTENT STRUCTURE */
+        .popup-slider-section {
+            flex: 1 1 55%;
+            /* Top 55% */
+            position: relative;
+            overflow: hidden;
+            background: #000;
+        }
+
+        .slider-track {
+            display: flex;
+            height: 100%;
+            width: max-content;
+            animation: slideInfinite 15s linear infinite;
+        }
+
+        .detail-popup:hover .slider-track {
+            animation-play-state: paused;
+        }
+
+        .slide {
+            width: var(--popup-width);
+            /* Each slide fills popup width */
+            height: 100%;
+            flex-shrink: 0;
+        }
+
+        .slide img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .popup-text-section {
+            flex: 1 1 45%;
+            /* Bottom 45% */
+            padding: 25px;
+            background: white;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .popup-text-section h3 {
+            font-size: 1.3rem;
+            margin-bottom: 0.5rem;
+            color: var(--accent);
+        }
+
+        .popup-text-section p {
+            font-size: 0.95rem;
+            line-height: 1.6;
+            color: var(--text-secondary);
+        }
+
+        /* 
+           EDUCATION SPECIFIC CARD
+           "Add an additional animated image on the left side of the card."
+           "The image should also move/slide automatically."
+           
+           We will apply this to the Center Card (index 2).
+           We will give it a specific class modifier.
+        */
+        .detail-popup.education-style {
+            /* Change layout to Side-by-Side to accommodate extra image? 
+               The prompt implies an *additional* image on the left.
+               Let's add a left sidebar column to the popup. */
+            flex-direction: row;
+            width: 600px;
+            /* Wider popup */
+        }
+
+        /* Left Animated Image Column */
+        .edu-sidebar {
+            width: 200px;
+            height: 100%;
+            overflow: hidden;
+            position: relative;
+            background: #0f172a;
+        }
+
+        .edu-sidebar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            /* Simple vertical scan animation */
+            animation: panImage 10s alternate infinite linear;
+        }
+
+        /* Adjust right content for Education style */
+        .edu-content {
+            display: flex;
+            flex-direction: column;
+            width: 400px;
+        }
+
+        @keyframes panImage {
+            0% {
+                object-position: center top;
+                transform: scale(1.1);
+            }
+
+            100% {
+                object-position: center bottom;
+                transform: scale(1.2);
+            }
+        }
+
+        @keyframes slideInfinite {
+            0% {
+                transform: translateX(0);
+            }
+
+            100% {
+                transform: translateX(calc(-100% / 2));
+            }
+
+            /* Assuming 2 replicated sets */
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 1024px) {
+            .org-container {
+                flex-direction: column;
+                gap: 50px;
+            }
+
+            /* Reset popups to stack below for mobile safety */
+            .card-wrapper:nth-child(1) .detail-popup,
+            .card-wrapper:nth-child(2) .detail-popup,
+            .card-wrapper:nth-child(3) .detail-popup {
+                top: 100%;
+                left: 50%;
+                right: auto;
+                transform: translateX(-50%) translateY(10px);
+                width: 350px;
+                margin-top: 10px;
+                z-index: 999;
+            }
+
+            .card-wrapper:hover .detail-popup {
+                transform: translateX(-50%) translateY(0);
+            }
+
+            /* Disable education sidebar for mobile to save space */
+            .detail-popup.education-style {
+                width: 350px;
+                flex-direction: column;
+            }
+
+            .edu-sidebar {
+                width: 100%;
+                height: 100px;
+            }
+
+            .edu-content {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="org-container">
+
+        <!-- CARD 1 (Left) -->
+        <div class="card-wrapper">
+            <div class="main-card">
+                <div class="card-front">
+                    <!-- CONTENT PLACEHOLDER -->
+                    <div class="card-icon">🏛️</div>
+                    <h3 class="card-title">Organization A</h3>
+                    <p class="card-subtitle">Leadership</p>
+                </div>
+                <!-- Simple Back Placeholder -->
+                <div class="card-back-placeholder">
+                    <span>View Details</span>
+                </div>
+            </div>
+
+            <!-- DETAIL POPUP -->
+            <div class="detail-popup">
+                <div class="popup-slider-section">
+                    <div class="slider-track">
+                        <!-- Slide Set 1 -->
+                        <div class="slide"><img
+                                src="https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=400&q=80"
+                                alt="Office"></div>
+                        <div class="slide"><img
+                                src="https://images.unsplash.com/photo-1556761175-5973dc0f32e7?auto=format&fit=crop&w=400&q=80"
+                                alt="Meeting"></div>
+                        <!-- Slide Set 2 (Duplicates) -->
+                        <div class="slide"><img
+                                src="https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=400&q=80"
+                                alt="Office"></div>
+                        <div class="slide"><img
+                                src="https://images.unsplash.com/photo-1556761175-5973dc0f32e7?auto=format&fit=crop&w=400&q=80"
+                                alt="Meeting"></div>
+                    </div>
+                </div>
+                <div class="popup-text-section">
+                    <h3>Executive Board</h3>
+                    <p>Responsible for strategic planning and execution of student welfare programs. Led initiatives
+                        that impacted over 2,000 students campus-wide.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- CARD 2 (Center - EDUCATION TYPE) -->
+        <div class="card-wrapper">
+            <div class="main-card">
+                <div class="card-front">
+                    <!-- CONTENT PLACEHOLDER -->
+                    <div class="card-icon">🎓</div>
+                    <h3 class="card-title">Education</h3>
+                    <p class="card-subtitle">Academic Profile</p>
+                </div>
+                <div class="card-back-placeholder">
+                    <span>Academic Highlights</span>
+                </div>
+            </div>
+
+            <!-- DETAIL POPUP (Education Style with Sidebar) -->
+            <div class="detail-popup education-style">
+                <!-- Additional Animated Sidebar Image -->
+                <div class="edu-sidebar">
+                    <img src="https://images.unsplash.com/photo-1506784983877-45594efa4cbe?auto=format&fit=crop&w=300&q=80"
+                        alt="Animated Portrait">
+                </div>
+
+                <!-- Main Content Area (Slider + Text) -->
+                <div class="edu-content">
+                    <div class="popup-slider-section">
+                        <div class="slider-track">
+                            <div class="slide"><img
+                                    src="https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=400&q=80"
+                                    alt="Study"></div>
+                            <div class="slide"><img
+                                    src="https://images.unsplash.com/photo-1434030216411-0b793f4b4173?auto=format&fit=crop&w=400&q=80"
+                                    alt="Books"></div>
+                            <div class="slide"><img
+                                    src="https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=400&q=80"
+                                    alt="Study"></div>
+                            <div class="slide"><img
+                                    src="https://images.unsplash.com/photo-1434030216411-0b793f4b4173?auto=format&fit=crop&w=400&q=80"
+                                    alt="Books"></div>
+                        </div>
+                    </div>
+                    <div class="popup-text-section">
+                        <h3>Universitas Pendidikan Indonesia</h3>
+                        <p>Bachelor of Education in Guidance and Counseling. GPA: 3.88. Active in peer tutoring and
+                            academic research.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- CARD 3 (Right) -->
+        <div class="card-wrapper">
+            <div class="main-card">
+                <div class="card-front">
+                    <!-- CONTENT PLACEHOLDER -->
+                    <div class="card-icon">🚀</div>
+                    <h3 class="card-title">Project C</h3>
+                    <p class="card-subtitle">Innovation</p>
+                </div>
+                <div class="card-back-placeholder">
+                    <span>View Projects</span>
+                </div>
+            </div>
+
+            <!-- DETAIL POPUP -->
+            <div class="detail-popup">
+                <div class="popup-slider-section">
+                    <div class="slider-track">
+                        <div class="slide"><img
+                                src="https://images.unsplash.com/photo-1517048676732-d65bc937f952?auto=format&fit=crop&w=400&q=80"
+                                alt="Tech"></div>
+                        <div class="slide"><img
+                                src="https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&w=400&q=80"
+                                alt="Code"></div>
+                        <div class="slide"><img
+                                src="https://images.unsplash.com/photo-1517048676732-d65bc937f952?auto=format&fit=crop&w=400&q=80"
+                                alt="Tech"></div>
+                        <div class="slide"><img
+                                src="https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&w=400&q=80"
+                                alt="Code"></div>
+                    </div>
+                </div>
+                <div class="popup-text-section">
+                    <h3>Innovation Lab</h3>
+                    <p>Developed interactive web applications and led a team of 3 developers. Focused on modern UI/UX
+                        principles.</p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</body>
+
+</html>

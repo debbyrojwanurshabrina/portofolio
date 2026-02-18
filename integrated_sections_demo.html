@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Integrated Sections Demo</title>
+    <!-- Importing same fonts and base styles for consistency -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        /* BASE STYLES REPLICATED FROM PORTFOLIO */
+        :root {
+            --primary-bg: #ffffff;
+            --secondary-bg: #f8fafc;
+            --text-main: #1e293b;
+            --text-secondary: #64748b;
+            --accent: #2563eb;
+            --border-color: #e2e8f0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            color: var(--text-main);
+            background: var(--primary-bg);
+            margin: 0;
+            line-height: 1.6;
+        }
+
+        h2 {
+            font-size: 2rem;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        section {
+            padding: 4rem 2rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        /* =========================================
+           1. EDUCATION SECTION (Static)
+           ========================================= */
+        #education {
+            background: white;
+        }
+
+        .timeline {
+            position: relative;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .timeline-item {
+            padding-left: 30px;
+            margin-bottom: 40px;
+            border-left: 2px solid var(--border-color);
+            position: relative;
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -6px;
+            top: 5px;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--text-main);
+        }
+
+        .timeline-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+        }
+
+        .timeline-year {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-bottom: 5px;
+            display: block;
+        }
+
+        .timeline-subtitle {
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 10px;
+        }
+
+        /* =========================================
+           2. PROFESSIONAL EXPERIENCE (Animated Image)
+           ========================================= */
+        #experience {
+            background: var(--secondary-bg);
+        }
+
+        /* Modified Layout for Experience Item to include Image */
+        .exp-item-wrapper {
+            display: flex;
+            gap: 30px;
+            margin-bottom: 50px;
+            align-items: flex-start;
+        }
+
+        /* The Animated Image Container */
+        .exp-image-box {
+            width: 180px;
+            height: 180px;
+            flex-shrink: 0;
+            border-radius: 12px;
+            overflow: hidden;
+            position: relative;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .exp-image-box img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            /* Automatic Sliding/Moving Animation */
+            animation: panSlow 15s alternate infinite linear;
+        }
+
+        @keyframes panSlow {
+            0% {
+                transform: scale(1.1) translate(0, 0);
+            }
+
+            100% {
+                transform: scale(1.2) translate(-5%, -5%);
+            }
+        }
+
+        .exp-content {
+            flex: 1;
+        }
+
+        /* Reuse styling for exp content */
+        .exp-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .exp-date {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        .exp-role {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--accent);
+            margin-bottom: 15px;
+        }
+
+        .exp-list {
+            padding-left: 20px;
+            color: var(--text-secondary);
+        }
+
+        .exp-list li {
+            margin-bottom: 8px;
+        }
+
+        /* =========================================
+           3. ORGANIZATION SECTION (The Logic)
+           ========================================= */
+        #organizations {
+            background: white;
+            overflow: hidden;
+            /* Prevent horizontal scroll from popup */
+        }
+
+        .org-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 40px;
+            /* Ensure plenty of horizontal space for the animation */
+            padding: 20px;
+        }
+
+        /* Container Hover Effect: Fade others */
+        .org-grid:hover .org-card-wrapper {
+            opacity: 0.4;
+            filter: grayscale(0.5);
+            transition: opacity 0.4s ease;
+        }
+
+        .org-grid .org-card-wrapper:hover {
+            opacity: 1;
+            filter: none;
+        }
+
+        /* 
+           WRAPPER 
+           - Holds both the Main Card and the Popup
+           - Manages the positioning context
+        */
+        .org-card-wrapper {
+            position: relative;
+            height: 350px;
+            /* Fixed height to match design */
+            transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+            z-index: 10;
+        }
+
+        /* MAIN CARD STYLE */
+        .org-main-card {
+            background: white;
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 30px;
+            height: 100%;
+            width: 100%;
+            position: relative;
+            /* Relative to wrapper */
+            z-index: 20;
+            /* Above popup initially */
+            display: flex;
+            flex-direction: column;
+
+            /* Smooth transitions for movement */
+            transition: transform 0.5s cubic-bezier(0.25, 0.8, 0.25, 1), box-shadow 0.3s ease;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        /* CONTENT */
+        .org-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .org-meta {
+            font-size: 0.875rem;
+            color: var(--accent);
+            margin-bottom: 1rem;
+            font-weight: 500;
+        }
+
+        .org-desc {
+            font-size: 0.95rem;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        /* 
+           HOVER INTERACTION 
+           1. Move Main Card Left
+           2. Show Popup on Right
+        */
+        .org-card-wrapper:hover .org-main-card {
+            transform: translateX(-60px);
+            /* Move slightly left */
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            border-color: var(--accent);
+        }
+
+        /* THE DETAIL POPUP */
+        .org-popup {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            /* Start centered behind, or aligned */
+            width: 320px;
+            /* Width of the popup */
+            height: 100%;
+            /* Match main card height or slightly taller */
+
+            background: white;
+            border-radius: 16px;
+            box-shadow: 10px 0 25px rgba(0, 0, 0, 0.1);
+
+            opacity: 0;
+            visibility: hidden;
+            transform: translateX(-50%) scale(0.9);
+            /* Start hidden behind */
+            z-index: 15;
+            /* Behind main card initially? No, side by side. */
+
+            transition: all 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            border: 1px solid var(--border-color);
+        }
+
+        /* 
+           POPUP ACTIVE STATE
+           Position: To the RIGHT of the *moved* main card.
+           Main card moves -60px left.
+           Popup needs to appear at roughly [Wrapper Center] + [Offset].
+           Wrapper is ~300px wide. 
+           Left: 0 is wrapper left.
+           We want popup to be at left: ~240px (overlapping slightly) or further.
+        */
+        .org-card-wrapper:hover .org-popup {
+            opacity: 1;
+            visibility: visible;
+            /* 
+               Move to the right side.
+               Since wrapper width is dynamic/grid, let's align it based on pixels.
+               Wrapper is relative. 
+               Move popup to: left 100% (end of wrapper) - overlap.
+            */
+            left: unset;
+            /* Reset centering */
+            right: -20px;
+            /* Position hanging off the right edge */
+            transform: translateX(60px) scale(1);
+            /* Move out right */
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+            z-index: 18;
+        }
+
+        /* POPUP INNER CONTENT */
+        .popup-slider {
+            flex: 3;
+            /* Top 60% approx */
+            position: relative;
+            overflow: hidden;
+            background: #000;
+        }
+
+        .slider-track {
+            display: flex;
+            height: 100%;
+            width: max-content;
+            animation: slide 10s linear infinite;
+        }
+
+        .slide {
+            width: 320px;
+            /* Match popup width */
+            height: 100%;
+            flex-shrink: 0;
+        }
+
+        .slide img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        @keyframes slide {
+            0% {
+                transform: translateX(0);
+            }
+
+            100% {
+                transform: translateX(calc(-320px * 2));
+            }
+
+            /* Move 2 slides */
+        }
+
+        .popup-desc {
+            flex: 2;
+            /* Bottom 40% */
+            padding: 20px;
+            background: #f8fafc;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+        }
+
+        .popup-desc p {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin: 0;
+            line-height: 1.5;
+        }
+
+        /* 4. PROJECTS SECTION (Static) */
+        #projects {
+            background: var(--secondary-bg);
+        }
+
+        .project-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+        }
+
+        .card-static {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 900px) {
+            .exp-item-wrapper {
+                flex-direction: column;
+            }
+
+            .exp-image-box {
+                width: 100%;
+                height: 200px;
+            }
+
+            /* Disable fancy hover on mobile, show popups as blocks? Or just disable */
+            .org-card-wrapper:hover .org-main-card {
+                transform: none;
+            }
+
+            .org-card-wrapper:hover .org-popup {
+                display: none;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- EDUCATION SECTION (Static Layout) -->
+    <section id="education">
+        <div class="container">
+            <h2>Education</h2>
+            <div class="timeline">
+                <div class="timeline-item">
+                    <div class="timeline-header">
+                        <h3 class="timeline-title">Universitas Pendidikan Indonesia</h3>
+                        <span class="timeline-year">Aug 2022 - Jan 2026</span>
+                    </div>
+                    <p class="timeline-subtitle">Bachelor of Education in Guidance and Counseling</p>
+                    <p class="timeline-desc">GPA: 3.88. Thesis on Mindfulness-Based Cognitive Therapy.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+    <!-- EXPERIENCE SECTION (Animated Image on Left) -->
+    <section id="experience">
+        <div class="container">
+            <h2>Professional Experience</h2>
+
+            <!-- Exp Item 1 -->
+            <div class="exp-item-wrapper">
+                <!-- NEW: Animated Image Box -->
+                <div class="exp-image-box">
+                    <img src="https://images.unsplash.com/photo-1577962917302-cd874c4e31d2?auto=format&fit=crop&w=400&q=80"
+                        alt="Workplace">
+                </div>
+                <!-- Content -->
+                <div class="exp-content">
+                    <h3 class="exp-title">JOMSIGN: Journal of Multicultural Studies</h3>
+                    <span class="exp-date">Jul 2024 - Jan 2026</span>
+                    <p class="exp-role">Public Relations Specialist</p>
+                    <ul class="exp-list">
+                        <li>Cultivated positive relationships between the Journal and the public.</li>
+                        <li>Executed effective communication strategies for brand image.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Exp Item 2 -->
+            <div class="exp-item-wrapper">
+                <div class="exp-image-box">
+                    <img src="https://images.unsplash.com/photo-1524178232363-1fb2b075b655?auto=format&fit=crop&w=400&q=80"
+                        alt="Teaching">
+                </div>
+                <div class="exp-content">
+                    <h3 class="exp-title">Public Senior High School 6 Bandung</h3>
+                    <span class="exp-date">Sept 2025 - Jan 2026</span>
+                    <p class="exp-role">School Counselor</p>
+                    <ul class="exp-list">
+                        <li>Managed individual counseling cases using REBT.</li>
+                        <li>Delivered 8 sessions of classroom guidance.</li>
+                    </ul>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+
+    <!-- ORGANIZATION SECTION (Interactive Cards) -->
+    <section id="organizations">
+        <div class="container">
+            <h2>Organizations</h2>
+            <div class="org-grid">
+
+                <!-- Card 1 -->
+                <div class="org-card-wrapper">
+                    <!-- MAIN VISIBLE CARD -->
+                    <div class="org-main-card">
+                        <h3 class="org-title">DPM BK FIP UPI</h3>
+                        <p class="org-meta">Chair | Jun 2024 - Oct 2025</p>
+                        <p class="org-desc">Managed intake for 160+ applicants, monitored cases, and managed
+                            professional referrals. Led a diverse team of 8 members.</p>
+                    </div>
+
+                    <!-- POPUP (Hidden by default) -->
+                    <div class="org-popup">
+                        <div class="popup-slider">
+                            <div class="slider-track">
+                                <div class="slide"><img
+                                        src="https://images.unsplash.com/photo-1557804506-669a67965ba0?w=400"
+                                        alt="Team"></div>
+                                <div class="slide"><img
+                                        src="https://images.unsplash.com/photo-1517048676732-d65bc937f952?w=400"
+                                        alt="Meeting"></div>
+                                <div class="slide"><img
+                                        src="https://images.unsplash.com/photo-1557804506-669a67965ba0?w=400"
+                                        alt="Team"></div>
+                            </div>
+                        </div>
+                        <div class="popup-desc">
+                            <p><strong>Impact:</strong> Increased student engagement by 40% through new legislative
+                                transparency policies.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 2 -->
+                <div class="org-card-wrapper">
+                    <div class="org-main-card">
+                        <h3 class="org-title">Peer Tutoring Division</h3>
+                        <p class="org-meta">Chairperson | Jun 2024 - Oct 2025</p>
+                        <p class="org-desc">Coordinated academic support systems. Managed intake for applicants and
+                            collaborated with BKDIPK.</p>
+                    </div>
+
+                    <div class="org-popup">
+                        <div class="popup-slider">
+                            <div class="slider-track">
+                                <div class="slide"><img
+                                        src="https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=400"
+                                        alt="Study"></div>
+                                <div class="slide"><img
+                                        src="https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=400"
+                                        alt="Books"></div>
+                                <div class="slide"><img
+                                        src="https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=400"
+                                        alt="Study"></div>
+                            </div>
+                        </div>
+                        <div class="popup-desc">
+                            <p><strong>Results:</strong> Facilitated over 200 tutoring sessions with a 95% satisfaction
+                                rate from freshmen.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 3 -->
+                <div class="org-card-wrapper">
+                    <div class="org-main-card">
+                        <h3 class="org-title">Commission II</h3>
+                        <p class="org-meta">Chairperson | Apr 2024 - Jan 2025</p>
+                        <p class="org-desc">Led oversight of four strategic divisions. Optimized budgeting and
+                            supervisory functions for 25+ activities.</p>
+                    </div>
+
+                    <div class="org-popup">
+                        <div class="popup-slider">
+                            <div class="slider-track">
+                                <div class="slide"><img
+                                        src="https://images.unsplash.com/photo-1556761175-5973dc0f32e7?w=400"
+                                        alt="Office"></div>
+                                <div class="slide"><img
+                                        src="https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=400"
+                                        alt="Work"></div>
+                                <div class="slide"><img
+                                        src="https://images.unsplash.com/photo-1556761175-5973dc0f32e7?w=400"
+                                        alt="Office"></div>
+                            </div>
+                        </div>
+                        <div class="popup-desc">
+                            <p><strong>Oversight:</strong> Successfully audited and improved the efficiency of 4 major
+                                student committees.</p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- PROJECTS SECTION (Static) -->
+    <section id="projects">
+        <div class="container">
+            <h2>Projects</h2>
+            <div class="project-grid">
+                <div class="card-static">
+                    <h3>Portfolio Website</h3>
+                    <p>Static site built with HTML/CSS.</p>
+                </div>
+                <div class="card-static">
+                    <h3>Counseling App Plan</h3>
+                    <p>Conceptual design for a mobile app.</p>
+                </div>
+                <div class="card-static">
+                    <h3>Research Thesis</h3>
+                    <p>Academic publication on MBCT.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+</body>
+
+</html>

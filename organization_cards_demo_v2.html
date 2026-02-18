@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modern Organization Cards - Expanding Layout</title>
+    <style>
+        :root {
+            --bg-color: #f8fafc;
+            --card-front-bg: #ffffff;
+            --card-back-bg: #0f172a;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --text-light: #f1f5f9;
+            --accent: #3b82f6;
+            --card-min-width: 250px;
+            --card-height: 350px;
+            --card-expanded-width: 600px;
+            --transition-speed: 0.6s;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 40px;
+            overflow-x: hidden;
+        }
+
+        /* FLEX CONTAINER - THE CORE OF THE "PUSH" EFFECT */
+        .org-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            width: 100%;
+            max-width: 1400px;
+            justify-content: center;
+            align-items: stretch;
+            perspective: 2000px;
+            /* Needed for 3D flip context */
+        }
+
+        /* CARD BASE STYLES */
+        .org-card {
+            position: relative;
+            height: var(--card-height);
+            min-width: var(--card-min-width);
+            flex: 1 1 250px;
+            /* Base flex: grow, shrink, basis */
+            cursor: pointer;
+            transition: flex 0.6s cubic-bezier(0.25, 0.8, 0.25, 1), box-shadow 0.3s ease;
+            border-radius: 16px;
+            background: transparent;
+            /* Inner handles bg */
+            /* Ensure smooth layout shift */
+            will-change: flex, width;
+        }
+
+        /* EXPANSION STATE (Hover) */
+        .org-card:hover {
+            flex: 3 1 var(--card-expanded-width);
+            /* Grow significantly larger */
+            z-index: 10;
+            /* Bring to top */
+        }
+
+        /* FLIP CONTAINER (The inner wrapper that rotates) */
+        .card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+            transform-style: preserve-3d;
+            border-radius: 16px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        .org-card:hover .card-inner {
+            transform: rotateY(180deg);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 10px 10px -5px rgba(0, 0, 0, 0.1);
+        }
+
+        /* FACES (Front and Back) */
+        .card-front,
+        .card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            border-radius: 16px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* FRONT FACE STYLING */
+        .card-front {
+            background-color: var(--card-front-bg);
+            color: var(--text-primary);
+            align-items: center;
+            justify-content: center;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .logo-area {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            transition: transform 0.3s ease;
+        }
+
+        .org-card:hover .logo-area {
+            transform: scale(1.1);
+        }
+
+        .front-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .front-subtitle {
+            margin-top: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* BACK FACE STYLING (The Detailed "Large" Card) */
+        .card-back {
+            background-color: var(--card-back-bg);
+            color: var(--text-light);
+            transform: rotateY(180deg);
+            /* Grid layout for the back content: Slider Top, Text Bottom */
+            display: grid;
+            grid-template-rows: 55% 45%;
+        }
+
+        /* TOP SECTION: IMAGE SLIDER */
+        .slider-section {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            /* Fills the grid row */
+            overflow: hidden;
+            background: #000;
+        }
+
+        .slider-track {
+            display: flex;
+            height: 100%;
+            /* Width handled by JS or CSS calc. Assumption: enough for seamless loop */
+            width: max-content;
+            animation: infiniteScroll 20s linear infinite;
+        }
+
+        /* Pause slider on hover interaction inside the card */
+        .card-back:hover .slider-track {
+            animation-play-state: paused;
+        }
+
+        .slide {
+            height: 100%;
+            width: 300px;
+            /* Fixed width for slide items */
+            flex-shrink: 0;
+            position: relative;
+        }
+
+        .slide img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0.8;
+            transition: opacity 0.3s;
+        }
+
+        .slide:hover img {
+            opacity: 1;
+        }
+
+        /* BOTTOM SECTION: DESCRIPTION */
+        .desc-section {
+            padding: 20px 30px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            text-align: left;
+            background: linear-gradient(to bottom right, #1e293b, #0f172a);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .desc-title {
+            font-size: 1.4rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--accent);
+        }
+
+        .desc-text {
+            font-size: 0.95rem;
+            line-height: 1.6;
+            color: #cbd5e1;
+        }
+
+        .action-btn {
+            margin-top: 15px;
+            align-self: flex-start;
+            padding: 8px 16px;
+            border: 1px solid var(--accent);
+            border-radius: 6px;
+            color: var(--accent);
+            text-decoration: none;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+        }
+
+        .action-btn:hover {
+            background: var(--accent);
+            color: white;
+        }
+
+        /* ANIMATIONS */
+        @keyframes infiniteScroll {
+            0% {
+                transform: translateX(0);
+            }
+
+            100% {
+                transform: translateX(-50%);
+            }
+
+            /* Logic: 2 sets of slides, move 50% */
+        }
+
+        /* RESPONSIVE ADJUSTMENTS */
+        @media (max-width: 768px) {
+            .org-container {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .org-card {
+                width: 100%;
+                max-width: 400px;
+                flex: none;
+                /* Disable flex scaling on mobile for stability */
+            }
+
+            .org-card:hover {
+                transform: scale(1.02);
+                /* Simple scale instead of flex grow */
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="org-container">
+
+        <!-- Card 1 -->
+        <div class="org-card">
+            <div class="card-inner">
+                <!-- Front -->
+                <div class="card-front">
+                    <div class="logo-area">⚖️</div>
+                    <div class="front-title">DPM BK FIP UPI</div>
+                    <div class="front-subtitle">Student Council</div>
+                </div>
+                <!-- Back (Expanded Detail) -->
+                <div class="card-back">
+                    <div class="slider-section">
+                        <!-- 
+                           SLIDER LOGIC: 
+                           We duplicate the slides to create a seamless loop.
+                           animation moves track to -50% width.
+                        -->
+                        <div class="slider-track">
+                            <!-- Set 1 -->
+                            <div class="slide"><img
+                                    src="https://images.unsplash.com/photo-1577962917302-cd874c4e31d2?w=800&auto=format&fit=crop"
+                                    alt="Meeting"></div>
+                            <div class="slide"><img
+                                    src="https://images.unsplash.com/photo-1531482615713-2afd69097998?w=800&auto=format&fit=crop"
+                                    alt="Team"></div>
+                            <div class="slide"><img
+                                    src="https://images.unsplash.com/photo-1543269865-cbf427effbad?w=800&auto=format&fit=crop"
+                                    alt="Event"></div>
+                            <!-- Set 2 (Duplicates) -->
+                            <div class="slide"><img
+                                    src="https://images.unsplash.com/photo-1577962917302-cd874c4e31d2?w=800&auto=format&fit=crop"
+                                    alt="Meeting"></div>
+                            <div class="slide"><img
+                                    src="https://images.unsplash.com/photo-1531482615713-2afd69097998?w=800&auto=format&fit=crop"
+                                    alt="Team"></div>
+                            <div class="slide"><img
+                                    src="https://images.unsplash.com/photo-1543269865-cbf427effbad?w=800&auto=format&fit=crop"
+                                    alt="Event"></div>
+                        </div>
+                    </div>
+                    <div class="desc-section">
+                        <h2 class="desc-title">Student Leadership</h2>
+                        <p class="desc-text">Led legislative initiatives for over 1,500 students. Managed budgeting,
+                            compliance, and strategic planning for the faculty's student body.</p>
+                        <a href="#" class="action-btn">View Organization</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card 2 -->
+        <div class="org-card">
+            <div class="card-inner">
+                <!-- Front -->
+                <div class="card-front">
+                    <div class="logo-area">📚</div>
+                    <div class="front-title">Peer Tutoring</div>
+                    <div class="front-subtitle">Academic Support</div>
+                </div>
+                <!-- Back (Expanded Detail) -->
+                <div class="card-back">
+                    <div class="slider-section">
+                        <div class="slider-track">
+                            <!-- Set 1 -->
+                            <div class="slide"><img
+                                    src="https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=800&auto=format&fit=crop"
+                                    alt="Study"></div>
+                            <div class="slide"><img
+                                    src="https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=800&auto=format&fit=crop"
+                                    alt="Group"></div>
+                            <div class="slide"><img
+                                    src="https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=800&auto=format&fit=crop"
+                                    alt="Books"></div>
+                            <!-- Set 2 -->
+                            <div class="slide"><img
+                                    src="https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=800&auto=format&fit=crop"
+                                    alt="Study"></div>
+                            <div class="slide"><img
+                                    src="https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=800&auto=format&fit=crop"
+                                    alt="Group"></div>
+                            <div class="slide"><img
+                                    src="https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=800&auto=format&fit=crop"
+                                    alt="Books"></div>
+                        </div>
+                    </div>
+                    <div class="desc-section">
+                        <h2 class="desc-title">Academic Excellence</h2>
+                        <p class="desc-text">Coordinated weekly tutoring sessions. Increased subject pass rates by 15%
+                            through targeted peer-to-peer mentorship programs.</p>
+                        <a href="#" class="action-btn">View Details</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card 3 -->
+        <div class="org-card">
+            <div class="card-inner">
+                <!-- Front -->
+                <div class="card-front">
+                    <div class="logo-area">🎨</div>
+                    <div class="front-title">JOMSIGN Editorial</div>
+                    <div class="front-subtitle">Graphic Design</div>
+                </div>
+                <!-- Back (Expanded Detail) -->
+                <div class="card-back">
+                    <div class="slider-section">
+                        <div class="slider-track">
+                            <!-- Set 1 -->
+                            <div class="slide"><img
+                                    src="https://images.unsplash.com/photo-1626785774573-4b799312c95d?w=800&auto=format&fit=crop"
+                                    alt="Design"></div>
+                            <div class="slide"><img
+                                    src="https://images.unsplash.com/photo-1558655146-d09347e0b7a8?w=800&auto=format&fit=crop"
+                                    alt="Art"></div>
+                            <div class="slide"><img
+                                    src="https://images.unsplash.com/photo-1561070791-2526d30994b5?w=800&auto=format&fit=crop"
+                                    alt="Magazine"></div>
+                            <!-- Set 2 -->
+                            <div class="slide"><img
+                                    src="https://images.unsplash.com/photo-1626785774573-4b799312c95d?w=800&auto=format&fit=crop"
+                                    alt="Design"></div>
+                            <div class="slide"><img
+                                    src="https://images.unsplash.com/photo-1558655146-d09347e0b7a8?w=800&auto=format&fit=crop"
+                                    alt="Art"></div>
+                            <div class="slide"><img
+                                    src="https://images.unsplash.com/photo-1561070791-2526d30994b5?w=800&auto=format&fit=crop"
+                                    alt="Magazine"></div>
+                        </div>
+                    </div>
+                    <div class="desc-section">
+                        <h2 class="desc-title">Creative Direction</h2>
+                        <p class="desc-text">Oversaw visual identity for the journal. Designed layouts for over 20
+                            publications and managed the transition to a digital-first format.</p>
+                        <a href="#" class="action-btn">View Portfolio</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card 4 -->
+        <div class="org-card">
+            <div class="card-inner">
+                <!-- Front -->
+                <div class="card-front">
+                    <div class="logo-area">🌍</div>
+                    <div class="front-title">Girl Scouts</div>
+                    <div class="front-subtitle">Community Service</div>
+                </div>
+                <!-- Back (Expanded Detail) -->
+                <div class="card-back">
+                    <div class="slider-section">
+                        <div class="slider-track">
+                            <!-- Set 1 -->
+                            <div class="slide"><img
+                                    src="https://images.unsplash.com/photo-1461354464878-ad92f492a5a0?w=800&auto=format&fit=crop"
+                                    alt="Camp"></div>
+                            <div class="slide"><img
+                                    src="https://images.unsplash.com/photo-1517486808906-6ca8b3f04846?w=800&auto=format&fit=crop"
+                                    alt="Scout"></div>
+                            <div class="slide"><img
+                                    src="https://images.unsplash.com/photo-1478131143081-80f7f84ca84d?w=800&auto=format&fit=crop"
+                                    alt="Nature"></div>
+                            <!-- Set 2 -->
+                            <div class="slide"><img
+                                    src="https://images.unsplash.com/photo-1461354464878-ad92f492a5a0?w=800&auto=format&fit=crop"
+                                    alt="Camp"></div>
+                            <div class="slide"><img
+                                    src="https://images.unsplash.com/photo-1517486808906-6ca8b3f04846?w=800&auto=format&fit=crop"
+                                    alt="Scout"></div>
+                            <div class="slide"><img
+                                    src="https://images.unsplash.com/photo-1478131143081-80f7f84ca84d?w=800&auto=format&fit=crop"
+                                    alt="Nature"></div>
+                        </div>
+                    </div>
+                    <div class="desc-section">
+                        <h2 class="desc-title">Leadership & Service</h2>
+                        <p class="desc-text">Platoon Commander leading regional competitions. Organized community
+                            outreach programs impacting 500+ local residents.</p>
+                        <a href="#" class="action-btn">View Activity</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</body>
+
+</html>
