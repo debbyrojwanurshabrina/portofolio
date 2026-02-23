@@ -49,7 +49,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     const typewriterElement = document.getElementById('typewriter-title');
-    const wordsToType = ["Debby", "Debby Rojwa N"];
+    const wordsToType = ["Debby", "Debby Rojwa Nurshabrina"];
 
     let currentWordIndex = 0;
     let charIndex = 0;
